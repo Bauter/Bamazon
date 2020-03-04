@@ -36,18 +36,14 @@ var connection = mysql.createConnection({
               type:"list",
               name:"menu-options",
               message:"Please select one of the following commands:",
-              choices:[chalk.green.bold("View Products for Sale"), chalk.yellow.bold("View Low Inventory"), chalk.magenta.bold("Add to Inventory"), chalk.cyan.bold("Add New Product")]
+              choices:[chalk.green.bold("View Products for Sale"), chalk.yellow.bold("View Low Inventory"), chalk.magenta.bold("Add to Inventory"), chalk.cyan.bold("Add New Product"), chalk.red.bold("Exit")]
           }
       ]).then(function(response) {
         // Assign the response to a variable.
         let command = response["menu-options"];
         runCommand(command);
-        console.log(command);
-        //connection.end();
-
         
-
-
+        //connection.end();
 
       });
 
@@ -78,6 +74,11 @@ var connection = mysql.createConnection({
             addNewItem();
             break;
 
+        case chalk.red.bold("Exit"):
+            connection.end();
+            process.exit;
+            break;
+
         default:
             break;
     };
@@ -93,7 +94,7 @@ function viewForSale() {
         if (err) throw err;
         console.table(res);
         // do something
-        connection.end();
+        returnTo();
     });
 
 }; // END OF viewForSale function
@@ -107,7 +108,7 @@ function viewLowInv() {
         if (err) throw err;
         console.table(res);
         // do something
-        connection.end();
+        returnTo();
     });
 
 }; // END OF viewLow function
@@ -117,11 +118,57 @@ function viewLowInv() {
 function addToInv() {
     console.log(chalk.blue.bold("Add to inventory") + chalk.red.dim("<Manger>"));
 
-    connection.query("", function(err, res) {
+
+    connection.query("SELECT item_id, product_name, stock_quantity FROM products",function(err, res) {
         if (err) throw err;
+
         console.table(res);
-        // do something
-    })
+        
+        inquirer.prompt([
+            {
+                type:"input",
+                name:"id",
+                message:"Which product would you like to update? (please use 'item_id')"
+            },
+            {
+                type:"input",
+                name:"num",
+                message:"How many units would you like to add to stock?"
+            }
+        ]).then(function(response) {
+            let id = response.id;
+            let numToAdd = response.num;
+            let itemsArray = res;
+            let currentStock;
+            let newStock;
+            for (i = 0; i< itemsArray.length; i++) {
+                if (id == itemsArray[i].item_id) {
+                    currentStock = itemsArray[i].stock_quantity;
+                    newStock = +numToAdd + +currentStock;
+                };
+                
+            };
+            console.log(newStock)
+            connection.query("UPDATE products SET ? WHERE ?",
+            [
+                {
+                    stock_quantity: newStock
+                },
+                {
+                    item_id: id
+                }
+            ],
+            function(err, res) {
+                if (err) throw err;
+                console.log(res.affectedRows + " product updated");
+                returnTo();
+                
+            })
+    
+        })
+    
+    });
+
 }; // END OF addToInv function
 
 
@@ -129,9 +176,66 @@ function addToInv() {
 function addNewItem() {
     console.log(chalk.blue.bold("Add new item to inventory") + chalk.red.dim("<Manager>"));
 
-    connection.query("", function(err, res) {
+    // run inquirer to find and store customer input
+    inquirer.prompt([
+        {
+            type:"input",
+            name:"product-name",
+            message:"Please input new product name: "
+        },
+        {
+            type:"input",
+            name:"department-name",
+            message:"Please input department name: "
+        },
+        {
+            type:"input",
+            name:"price",
+            message:"What is the retail price per unit?: "
+        },
+        {
+            type:"input",
+            name:"quantity",
+            message:"How many units would you like to add to inventory"
+        }
+    ]).then(function(response) {
+        let productName = response["product-name"];
+        let departmentName = response["department-name"];
+        let price = response.price;
+        let setQuantity = response.quantity;
+
+        connection.query("INSERT INTO products SET?",
+        {
+           product_name: productName,
+           department_name: departmentName,
+           price: price,
+           stock_quantity: setQuantity, 
+        },
+        function(err, res) {
         if (err) throw err;
-        console.table();
-        // do something
+        
+        console.log(res.affectedRows + chalk.blue("product added!"));
+        returnTo();
+        })
     })
+
 }; // END OF addNewItem
+
+// A function to prompt the user if they would like to return to main menu or sever the connection.
+function returnTo() {
+    inquirer.prompt([
+        {
+            type:"confirm",
+            name:"return",
+            message:"Would you like to return to the main menu?"
+        }
+    ]).then(function(response) {
+        if (response.return) {
+            console.log(chalk.blue("returning to main menu"));
+            menu()
+        } else {
+            console.log(chalk.blue("\n\nGoodbye"));
+            connection.end();
+        }
+    }) 
+}
