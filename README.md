@@ -406,3 +406,60 @@ function getShipping() {
 
 ##### A visual example of cli in operation
 
+-First run 'bamazonCustomer.js' with node to display the database table 'products' and start inquirer prompt.
+
+![bC-1](images/bC-1.PNG)
+
+-Then enter the 'item_id' and 'quantity' you would like to buy. The results will be logged and the user will be prompted if they would like to keep shopping.
+
+![bC-2](images/bC-2.PNG)
+
+-When selecting yes, 'showItems()' will run, repeating step 1.
+
+![bC-3](images/bC-3.PNG)
+
+-After selecting a new item and quantity, the shopping cart , total for new order, and total for all items in the cart will be logged, database updated, and the user prompted if they would like to keep shopping.
+
+![bC-4](images/bC-4.PNG)
+
+-When the user decides they don't want to keep shopping, 'getShipping()' will run, prompting the user for their shipping info, and shipping option.
+
+![bC-5](images/bC-5.PNG)
+
+-After the user enters the shipping information and selects their option, the results will be logged, the shipping cost will be added to the total cost, and the connection will end.
+
+![bC-6](images/bC-6.PNG)
+
+### App: 'bamazonManager.js'
+
+#### Purpose 
+
+-Provide a menu of commands for the manager to run.
+
+* List a set of menu options:
+
+    * View Products for Sale
+    
+    * View Low Inventory
+    
+    * Add to Inventory
+    
+    * Add New Product
+
+#### What should it do?:
+
+-Here's what each command should do:
+
+  * If a manager selects `View Products for Sale`, the app should list every available item: the item IDs, names, prices, and quantities.
+
+  * If a manager selects `View Low Inventory`, then it should list all items with an inventory count lower than five.
+
+  * If a manager selects `Add to Inventory`, your app should display a prompt that will let the manager "add more" of any item currently in the store.
+
+  * If a manager selects `Add New Product`, it should allow the manager to add a completely new product to the store.
+
+
+##### Notes:
+
+
+##### A visual example of cli in operation
