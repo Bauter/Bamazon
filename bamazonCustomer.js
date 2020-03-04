@@ -33,7 +33,7 @@ connection.connect(function(err) {
 });
 
 function showItems() {
-  console.log(chalk.blue("Here's whats for sale"));
+  console.log(chalk.blue.bold("Here's whats for sale:"));
   connection.query("SELECT * FROM products", function(err, res) {
     if (err) throw err;
     console.table(res);
