@@ -67,25 +67,27 @@ function startInquirer(res) {
       
       if (itemID == itemsArray[i].item_id) {
         //console.log("match found! " + itemsArray[i].product_name)
-        shoppingCart.push(" " + numOf + " - " + itemsArray[i].product_name);
+        
         if (numOf <= itemsArray[i].stock_quantity) {
           //console.log("ok, ordering " + numOf + " " + itemsArray[i].product_name )
           quantityLeft = itemsArray[i].stock_quantity - numOf
           total = itemsArray[i].price * numOf
+          shoppingCart.push(" " + numOf + " - " + itemsArray[i].product_name);
           shoppingCartTotal.push(total);
           //update(numOf);
         } else {
-          console.log(chalk.red("Sorry, quantity of that item is limited. lets try again.. this time order a bit less..."));
-          showItems();
+          console.log(chalk.red("Sorry, quantity of that item is limited. lets try again..." + chalk.red.underline("this time order a bit less...")));
+          return showItems();
         };
       };
         
       
     }; // end of for loop
-
+    console.log(chalk.magenta("\n============================================\n"))
     console.log("Shopping cart: " + chalk.yellow.bold(shoppingCart));
     console.log("This adds " + chalk.green(total) + " to your order");
     console.log("total for all items in shopping cart: " + chalk.green.bold.underline(shoppingCartTotal.reduce(addEmUp)));
+    console.log(chalk.magenta("\n============================================\n"))
 
     // update database before asking customer if they want to keep shopping
     update(itemID, quantityLeft);
@@ -105,11 +107,7 @@ function keepShopping() {
     if (response.confirm === true) {
       showItems();
     } else {
-      console.log("\n" + chalk.blue.bold("Thanks for shopping with us!") + "\n")
-      console.log("Today you purchased: " + chalk.yellow.bold(shoppingCart));
-      console.log("The total for these purchases: " + chalk.green.bold.underline(shoppingCartTotal.reduce(addEmUp)));
-      console.log("\n" + chalk.blue.bold("Come back soon!"));
-      connection.end();
+      getShipping();
     }
 
   });
@@ -117,7 +115,7 @@ function keepShopping() {
 
 // Update MySQL database
 function update(itemID, quantityLeft) {
-  console.log("Updating quantities...\n");
+  console.log(chalk.blue("\nUpdating quantities...\n"));
   connection.query(
     "UPDATE products SET ? WHERE ?",
     [
@@ -130,7 +128,7 @@ function update(itemID, quantityLeft) {
     ], 
     function(err, res) {
       if (err) throw err;
-      console.log(res.affectedRows + " products updated!\n");
+      console.log(res.affectedRows + chalk.blue(" products updated!\n"));
       keepShopping();
     }
   );
@@ -138,4 +136,106 @@ function update(itemID, quantityLeft) {
 
 function addEmUp (total, num) {
   return total + num;
+}; // END OF addEmUp function
+
+function getShipping() {
+  inquirer.prompt([
+    {
+      type:"input",
+      name:"users-name",
+      message:"What is your full name?",
+      validate: function(value) {
+        if (value == "") {
+            return "Please enter your full name"
+
+        } else {
+            return true
+        }
+     }
+    },
+    {
+      type:"input",
+      name:"street-address",
+      message:"What is your street address?",
+      validate: function(value) {
+        if (value == "") {
+            return "Please enter your street address"
+
+        } else {
+            return true
+        }
+     }
+    },
+    {
+      type:"input",
+      name:"city",
+      message:"What city do you live in?",
+      validate: function(value) {
+        if (value == "") {
+            return "Please enter your city"
+
+        } else {
+            return true
+        }
+     }
+    },
+    {
+      type:"input",
+      name:"state",
+      message:"What state do you live in?",
+      validate: function(value) {
+        if (value == "") {
+            return "Please enter your state"
+
+        } else {
+            return true
+        }
+     }
+    },
+    {
+      type:"input",
+      name:"zip",
+      message:"Please enter your zip code",
+      validate: function(value) {
+        if (value == "") {
+            return "Please enter your zip code"
+
+        } else {
+            return true
+        }
+     }
+    },
+    {
+      type:"list",
+      name:"shipping",
+      message:"Please select a shipping option: Overnight = $100, 2-3 days = $30, 5-6 days = $15",
+      choices:[100, 30, 15],
+    }
+  ]).then(function(response){
+    let name = response["users-name"];
+    let street = response["street-address"];
+    let city = response.city;
+    let state = response.state;
+    let zip = response.zip;
+    let shipping = response.shipping;
+    shoppingCartTotal.push(shipping);
+
+    let shippingAddress = [
+      "---------------------\n",
+      name,
+      street,
+      city + ", " + state + " " + zip,
+      "---------------------\n"
+    ].join("\n\n")
+
+    console.log(chalk.magenta("\n============================================\n"))
+      console.log("\n" + chalk.blue.bold("Thanks for shopping with us!") + "\n")
+      console.log("Today you purchased: " + chalk.yellow.bold(shoppingCart));
+      console.log("The total for these purchases with shipping: " + chalk.green.bold.underline(shoppingCartTotal.reduce(addEmUp)));
+      console.log(chalk.cyan("Shipping to: \n") + chalk.magenta(shippingAddress));
+      console.log("\n" + chalk.blue.bold("Come back soon!"));
+      console.log(chalk.magenta("\n============================================\n"))
+      connection.end();
+
+  })
 }
