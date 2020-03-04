@@ -3,11 +3,13 @@ const inquirer = require("inquirer");
 const mysql = require("mysql");
 
 //global variables
+let quantityLeft;
 let total;
 let shoppingCart = [];
 let shoppingCartTotal = [];
 
-// Settign up mysql connection 
+
+// Setting up mysql connection 
 var connection = mysql.createConnection({
   host: "localhost",
 
@@ -38,6 +40,7 @@ function showItems() {
   });
 };
 
+// Start prompting user about purchases via inquirer
 function startInquirer(res) {
   let itemsArray = res;
   inquirer.prompt([
@@ -55,42 +58,41 @@ function startInquirer(res) {
       
     }
   ]).then(function(response) {
-   
+    
     let itemID = response.itemSelect;
     let numOf = response.itemQuantity;
 
     for (i=0; i< itemsArray.length; i++) {
       
       if (itemID == itemsArray[i].item_id) {
-        console.log("match found! " + itemsArray[i].product_name)
-        shoppingCart.push(" " + itemsArray[i].product_name);
+        //console.log("match found! " + itemsArray[i].product_name)
+        shoppingCart.push(" " + numOf + " - " + itemsArray[i].product_name);
         if (numOf <= itemsArray[i].stock_quantity) {
-          console.log("ok, ordering " + numOf + " " + itemsArray[i].product_name )
+          //console.log("ok, ordering " + numOf + " " + itemsArray[i].product_name )
+          quantityLeft = itemsArray[i].stock_quantity - numOf
           total = itemsArray[i].price * numOf
-          shoppingCartTotal.push(" " + total);
+          shoppingCartTotal.push(total);
+          //update(numOf);
         } else {
           console.log("Sorry, quantity of that item is limited.")
         };
-      } else {
-        console.log("no item by that item_id");
+      };
         
-      }
+      
     }; // end of for loop
 
     console.log("Shopping cart: " + shoppingCart);
     console.log("total for this order: " + total);
-    console.log("total for all items in shopping cart: " + shoppingCartTotal);
+    console.log("total for all items in shopping cart: " + shoppingCartTotal.reduce(addEmUp));
+
     // update database before asking customer if they want to keep shopping
-    confirm();
+    update(itemID, quantityLeft);
   })
 
-
-
-
-}
+}; // END OF startInquirer function
 
 // Prompt the user to see if they would like to keep shopping
-function confirm() {
+function keepShopping() {
   inquirer.prompt([
     {
       type:"confirm",
@@ -101,8 +103,37 @@ function confirm() {
     if (response.confirm === true) {
       showItems();
     } else {
-      process.exit;
+      console.log("\nThanks for shopping with us!\n")
+      console.log("Today you purchased: " + shoppingCart);
+      console.log("The total for these purchases: " + shoppingCartTotal.reduce(addEmUp));
+      console.log("Come back soon!");
+      connection.end();
     }
 
   });
-};
+}; // END OF keepShopping function
+
+// Update MySQL database
+function update(itemID, quantityLeft) {
+  console.log("Updating quantities...\n");
+  connection.query(
+    "UPDATE products SET ? WHERE ?",
+    [
+      {
+        stock_quantity: quantityLeft
+      },
+      {
+       item_id: itemID
+      }
+    ], 
+    function(err, res) {
+      if (err) throw err;
+      console.log(res.affectedRows + " products updated!\n");
+      keepShopping();
+    }
+  );
+}; // END OF update function
+
+function addEmUp (total, num) {
+  return total + num;
+}
