@@ -234,7 +234,7 @@ function returnTo() {
             console.log(chalk.blue("returning to main menu"));
             menu()
         } else {
-            console.log(chalk.blue("\n\nGoodbye"));
+            console.log(chalk.blue("\n\nGoodbye\n\n"));
             connection.end();
         }
     }) 

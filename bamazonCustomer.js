@@ -14,13 +14,13 @@ let shoppingCartTotal = [];
 var connection = mysql.createConnection({
   host: "localhost",
 
-  // Your port; if not 3306
+  // Port
   port: 3306,
 
-  // Your username
+  // Username
   user: "bauter",
 
-  // Your password
+  // Password
   password: "raspberry3.14",
   database: "bamazon_db"
 });
@@ -90,7 +90,7 @@ function startInquirer(res) {
     console.log(chalk.magenta("\n============================================\n"))
 
     // update database before asking customer if they want to keep shopping
-    update(itemID, quantityLeft);
+    update(itemID, quantityLeft, total);
   })
 
 }; // END OF startInquirer function
@@ -114,13 +114,14 @@ function keepShopping() {
 }; // END OF keepShopping function
 
 // Update MySQL database
-function update(itemID, quantityLeft) {
+function update(itemID, quantityLeft, total) {
   console.log(chalk.blue("\nUpdating quantities...\n"));
   connection.query(
     "UPDATE products SET ? WHERE ?",
     [
       {
-        stock_quantity: quantityLeft
+        stock_quantity: quantityLeft,
+        product_sales: total
       },
       {
        item_id: itemID
