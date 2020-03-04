@@ -58,22 +58,22 @@ var connection = mysql.createConnection({
   function runCommand(commandInput) {
     
     switch (commandInput) {
-        case "View Products for Sale":
+        case chalk.green.bold("View Products for Sale"):
             // do something (call function here)
             viewForSale();
             break;
 
-        case "View Low Inventory":
+        case chalk.yellow.bold("View Low Inventory"):
             // do something (call function here)
             viewLowInv();
             break;
 
-        case "Add to Inventory":
+        case chalk.magenta.bold("Add to Inventory"):
             // do something (call function here)
             addToInv();
             break;
 
-        case "Add New Product":
+        case chalk.cyan.bold("Add New Product"):
             // do something (call function here)
             addNewItem();
             break;
