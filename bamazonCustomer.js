@@ -1,6 +1,7 @@
 // NPM packages
 const inquirer = require("inquirer");
 const mysql = require("mysql");
+const chalk = require('chalk');
 
 //global variables
 let quantityLeft;
@@ -32,7 +33,7 @@ connection.connect(function(err) {
 });
 
 function showItems() {
-  console.log("Here's whats for sale");
+  console.log(chalk.blue("Here's whats for sale"));
   connection.query("SELECT * FROM products", function(err, res) {
     if (err) throw err;
     console.table(res);
@@ -74,16 +75,17 @@ function startInquirer(res) {
           shoppingCartTotal.push(total);
           //update(numOf);
         } else {
-          console.log("Sorry, quantity of that item is limited.")
+          console.log(chalk.red("Sorry, quantity of that item is limited. lets try again.. this time order a bit less..."));
+          showItems();
         };
       };
         
       
     }; // end of for loop
 
-    console.log("Shopping cart: " + shoppingCart);
-    console.log("total for this order: " + total);
-    console.log("total for all items in shopping cart: " + shoppingCartTotal.reduce(addEmUp));
+    console.log("Shopping cart: " + chalk.yellow.bold(shoppingCart));
+    console.log("This adds " + chalk.green(total) + " to your order");
+    console.log("total for all items in shopping cart: " + chalk.green.bold.underline(shoppingCartTotal.reduce(addEmUp)));
 
     // update database before asking customer if they want to keep shopping
     update(itemID, quantityLeft);
@@ -103,10 +105,10 @@ function keepShopping() {
     if (response.confirm === true) {
       showItems();
     } else {
-      console.log("\nThanks for shopping with us!\n")
-      console.log("Today you purchased: " + shoppingCart);
-      console.log("The total for these purchases: " + shoppingCartTotal.reduce(addEmUp));
-      console.log("Come back soon!");
+      console.log("\n" + chalk.blue.bold("Thanks for shopping with us!") + "\n")
+      console.log("Today you purchased: " + chalk.yellow.bold(shoppingCart));
+      console.log("The total for these purchases: " + chalk.green.bold.underline(shoppingCartTotal.reduce(addEmUp)));
+      console.log("\n" + chalk.blue.bold("Come back soon!"));
       connection.end();
     }
 
