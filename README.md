@@ -480,10 +480,10 @@ var connection = mysql.createConnection({
     port: 3306,
   
     // Username
-    user: "bauter",
+    user: "userName goes here", // default userName = 'root'
   
     // Password
-    password: "raspberry3.14",
+    password: "MySQL password goes here",
     database: "bamazon_db"
   });
   
@@ -821,10 +821,10 @@ var connection = mysql.createConnection({
     port: 3306,
   
     // Username
-    user: "bauter",
+    user: "userName goes here", // default userName = 'root',
   
     // Password
-    password: "raspberry3.14",
+    password: "MySQL password goes here",
     database: "bamazon_db"
 });
   
