@@ -182,10 +182,10 @@ function getShipping() {
     {
       type:"input",
       name:"state",
-      message:"What state do you live in?",
+      message:"What state do you live in? (initials)",
       validate: function(value) {
         if (value == "") {
-            return "Please enter your state"
+            return "Please enter your state (initial)"
 
         } else {
             return true
