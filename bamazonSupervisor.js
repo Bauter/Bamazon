@@ -24,7 +24,7 @@ connection.connect(function(err) {
     menu();
 });
 
-
+// A function to create a menu
 function menu() {
     inquirer.prompt([
         {
@@ -41,7 +41,7 @@ function menu() {
       //connection.end();
 
     });
-};
+};// END OF menu function
 
 // A function to execute the command from menu.
 function runCommand(commandInput) {
@@ -68,6 +68,7 @@ function runCommand(commandInput) {
 
 }; // END OF runCommand function
 
+// A function to show departments and join with 'products.product_sales' and display 'total_costs' column by displaying the sum of two tables.
 function showDepartments() {
     console.log(chalk.blue.bold("Departments overview:") + chalk.red.dim("<Supervisor>"));
     connection.query("SELECT departments.department_id, departments.department_name, departments.over_head_costs, products.product_sales, (products.product_sales - departments.over_head_costs) AS total_profit FROM departments, products WHERE departments.department_name = products.department_name", function(err, res) {
@@ -77,6 +78,7 @@ function showDepartments() {
     });
 }; // END OF showDepartments function
 
+// A function to add a department
 function addDepartment() {
     console.log(chalk.blue.bold("Lets add a department:") + chalk.red.dim("<Supervisor>"));
 
@@ -125,7 +127,7 @@ function addDepartment() {
 
     });
 
-} // END OF addDepartment fucntion
+} // END OF addDepartment function
 
 function returnTo() {
     inquirer.prompt([

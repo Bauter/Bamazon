@@ -139,6 +139,7 @@ function addEmUp (total, num) {
   return total + num;
 }; // END OF addEmUp function
 
+// A function to grab user shipping info, shipping cost, and display, then end the connection (checkout if you will)
 function getShipping() {
   inquirer.prompt([
     {
@@ -239,4 +240,4 @@ function getShipping() {
       connection.end();
 
   })
-}
+}; // END OF getShipping function.

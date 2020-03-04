@@ -98,7 +98,7 @@ VALUES ("Nitro 5 laptop", "electronics", 699.99, 5),
 
 ### App: 'bamazonCustomer.js'
 
-#### Purpose 
+#### Purpose: 
 -Running this application will first display all of the items available for sale. Include the ids, names, and prices of products for sale.
 
 
@@ -432,7 +432,7 @@ function getShipping() {
 
 ### App: 'bamazonManager.js'
 
-#### Purpose 
+#### Purpose: 
 
 -Provide a menu of commands for the manager to run.
 
@@ -461,7 +461,7 @@ function getShipping() {
 
 ##### Notes:
 
--You can simply copy and past the required modules, the connection variable and the connection function from 'bamazonCustomer.js'.
+-You can simply copy the required modules, the connection variable and the connection function from 'bamazonCustomer.js'.
 ```
 // NPM packages
 const inquirer = require("inquirer");
@@ -766,7 +766,245 @@ function returnTo() {
 
  ![bM-7](images/bM-7.PNG)
 
+### App: 'bamazonSupervisor.js'
+
+#### Purpose: 
+
+-Running this application will list a set of menu options:
+
+   * View Product Sales by Department
+   
+   * Create New Department
+
+#### What should it do?:
+
+-When a supervisor selects `View Product Sales by Department`, the app should display a summarized table in their terminal/bash window.
+
+-When a supervisor selects `Create New Department`, the app should add a department to the table 'departments'.
+
+#### Create a new table called 'departments'
+
+-In 'bamazonSeeds.sql' create a new table called 'departments', and add columns for 'department_id', 'department_name', and 'over_head_costs'. Then insert into these tables some data.
+
+```
+CREATE TABLE departments (
+    department_id INT NOT NULL AUTO_INCREMENT,
+    department_name VARCHAR(50) NOT NULL,
+    over_head_costs INTEGER(10),
+    PRIMARY KEY (department_id)
+);
+
+INSERT INTO departments (department_name, over_head_costs)
+VALUES ("electronics", 10000),
+("Babies/toddlers", 5000),
+("Toys", 8000),
+("Boy's clothing", 5000),
+
+```
+
+-Copy the code into MySQL Workbench and highlight the new code with your cursor. then hit the 2nd 'lightning bolt' with a cursor included in the icon. This will add the data to your table.
+
+##### Notes:
+
+--You can simply copy the required modules, the connection variable and the connection function from 'bamazonCustomer.js'.
+
+```
+// NPM packages
+const inquirer = require("inquirer");
+const mysql = require("mysql");
+const chalk = require('chalk');
+
+var connection = mysql.createConnection({
+    host: "localhost",
+  
+    // Port
+    port: 3306,
+  
+    // Username
+    user: "bauter",
+  
+    // Password
+    password: "raspberry3.14",
+    database: "bamazon_db"
+});
+  
+// mysql connection function
+connection.connect(function(err) {
+    if (err) throw err;
+    console.log("connected as id " + connection.threadId);
+    menu();
+});
+```
+
+-Create another 'menu()' function and another 'runCommand()' function, both of these will operate just like in 'bamazonManager.js'.
+
+```
+// A function to create a menu
+function menu() {
+    inquirer.prompt([
+        {
+            type:"list",
+            name:"menu-options",
+            message:"Please select one of the following commands:",
+            choices:[chalk.green.bold("View Product Sales by Department"), chalk.yellow.bold("Create New Department"), chalk.red.bold("Exit")]
+        }
+    ]).then(function(response) {
+      // Assign the response to a variable.
+      let command = response["menu-options"];
+      runCommand(command);
+      
+      //connection.end();
+
+    });
+};// END OF menu function
+
+// A function to execute the command from menu.
+function runCommand(commandInput) {
+    
+    switch (commandInput) {
+        case chalk.green.bold("View Product Sales by Department"):
+            // do something (call function here)
+            showDepartments();
+            break;
+
+        case chalk.yellow.bold("Create New Department"):
+            // do something (call function here)
+            addDepartment();
+            break;
+
+        case chalk.red.bold("Exit"):
+            connection.end();
+            process.exit;
+            break;
+
+        default:
+            break;
+    };
+
+}; // END OF runCommand function
+```
+
+#### Each function inside 'runCommand()'
+
+##### "View Product Sales by Department"/showDepartments()
+
+-This function will create a new connection query to display("SELECT") three columns "FROM" the 'departments' table, 'product_sales' "FROM" the 'products' table, "AS" well as display a new column called 'total_profit' which is the sum of 'over_head_costs' and 'product_sales'.
+
+```
+// A function to show departments and join with 'products.product_sales' and display 'total_costs' column by displaying the sum of two tables.
+function showDepartments() {
+    console.log(chalk.blue.bold("Departments overview:") + chalk.red.dim("<Supervisor>"));
+    connection.query("SELECT departments.department_id, departments.department_name, departments.over_head_costs, products.product_sales, (products.product_sales - departments.over_head_costs) AS total_profit FROM departments, products WHERE departments.department_name = products.department_name", function(err, res) {
+      if (err) throw err;
+      console.table(res);
+      returnTo();
+    });
+}; // END OF showDepartments function
+```
+
+##### "Create New Department"/addDepartment()
+
+-This function will use inquirer prompt to prompt the user to enter a new 'department name' and 'over head costs' for the new department and assign to variables. Then a new connection query is created where we "INSERT INTO" 'departments' table and "SET" the new department name to 'department_name' and the new departments over head costs to 'over_head_cost'
+
+```
+// A function to add a department
+function addDepartment() {
+    console.log(chalk.blue.bold("Lets add a department:") + chalk.red.dim("<Supervisor>"));
+
+    inquirer.prompt([
+        {
+            type:"input",
+            name:"dptName",
+            message:"What is the name of the department you would like to add? ",
+            validate: function(value) {
+                if (value == "") {
+                    return "Please enter a department name"
+        
+                } else {
+                    return true
+                }
+             }
+        },
+        {
+            type:"input",
+            name:"overHead",
+            message:"What are the over-head costs for this new department?",
+            validate: function(value) {
+                if (value == "") {
+                    return "Please enter a number"
+        
+                } else {
+                    return true
+                }
+             }
+        }
+    ]).then(function(response) {
+        let departmentName = response.dptName;
+        let overHeadCost = response.overHead;
+
+        connection.query("INSERT INTO departments SET?",
+        {
+           department_name: departmentName,
+           over_head_costs: overHeadCost
+        },
+        function(err, res) {
+        if (err) throw err;
+        
+        console.log(res.affectedRows + chalk.blue("department added!"));
+        returnTo();
+        })
+
+    });
+
+} // END OF addDepartment function
+```
+
+##### Add. notes
+
+-You will notice each function ends by calling the 'returnTo()' function. This function simply uses inquirer to prompt the user if they would like to return to the menu or not. If they do, 'menu()' is called, else the connection is ended'
+
+```
+// A function to prompt the user if they would like to return to main menu or sever the connection.
+function returnTo() {
+    inquirer.prompt([
+        {
+            type:"confirm",
+            name:"return",
+            message:"Would you like to return to the main menu?"
+        }
+    ]).then(function(response) {
+        if (response.return) {
+            console.log(chalk.blue("returning to main menu"));
+            menu()
+        } else {
+            console.log(chalk.blue("\n\nGoodbye\n\n"));
+            connection.end();
+        }
+    }) 
+}; // END OF returnTo function
+```
+
+##### A visual example of cli in operation
+
+ * MENU
+
+ ![bS-1](images/bS-1.PNG)
+
+ * "View Product Sales by Department"
+
+ ![bS-2](images/bS-2.PNG)
+
+ * "Create New Department"
+
+ ![bS-3](images/bS-3.PNG)
 
 
+## Guidelines for Collaboration ##
 
+-As I am still new to coding, and my initial projects will be used to create a portfolio to show to potential employers, i ask that no modifications are made at this time.
 
+#### However ####
+
+-Any input to improve my coding would be GREATLY appreciated. I am not opposed to the files being pulled for the sake of modifying and using as an example to teach/explain alt. methods, better practice, etc. Again I would ask they not be pushed to the repo to modify the initial document, but instead be sent to me an some alt. way.
+
+--Thank you for taking the time to look over this 'README' file--
