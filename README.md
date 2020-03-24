@@ -742,7 +742,7 @@ function returnTo() {
 
  ![bM-1](images/bM-1.PNG)
 
- * "View Low Inventory"
+ * "View Inventory"
 
  ![bM-2](images/bM-2.PNG)
 
